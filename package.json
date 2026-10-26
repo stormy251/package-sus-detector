@@ -1,6 +1,6 @@
 {
   "name": "package-sus-detector",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pre-install package risk check for npm and PyPI: existence, age, maintainers, vulnerabilities (OSV), typosquat and slopsquat signals, lockfile input and a CI gate.",
   "type": "module",
   "main": "src/main.js",

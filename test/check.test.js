@@ -221,3 +221,31 @@ test('summary: counts, worst offenders, overall', () => {
     assert.deepEqual(s.knownMaliciousListed, ['npm:b']);
     assert.equal(s.durationSeconds, 10);
 });
+
+test('abandoned near-copy of a popular name keeps full typosquat weight despite high downloads (0.2)', () => {
+    // mirrors the real `expres` case: 1 edit from `express`, last release 13 years ago, ~12k weekly downloads
+    const reg = { ecosystem: 'npm', versionExists: true, firstPublishedAt: daysAgo(5000), latestReleaseAt: daysAgo(4800), weeklyDownloads: 12000, maintainerCount: 1, deprecated: { flag: false }, repositoryUrl: 'x' };
+    const typo = { suspected: true, matches: [{ popular: 'express', rank: 262, type: 'edit_distance', distance: 1 }] };
+    const ev = evaluate({ registry: reg, vulns: null, typo, halluc: { plausible: false }, license: { category: 'permissive' }, now: NOW });
+    assert.equal(ev.verdict, 'caution');
+    assert.ok(ev.reasons.some((x) => x.code === 'typosquat_similarity' && x.points === 25));
+    // the same name, but still maintained -> still discounted (no regression for e.g. `preact`)
+    const live = evaluate({ registry: { ...reg, latestReleaseAt: daysAgo(60) }, vulns: null, typo, halluc: { plausible: false }, license: { category: 'permissive' }, now: NOW });
+    assert.equal(live.verdict, 'ok');
+    assert.ok(live.score < 15);
+});
+
+test('self-declared placeholder package with near-zero usage gets a placeholder signal (0.2)', () => {
+    // mirrors the real `react-codeshift` case
+    const reg = { ecosystem: 'npm', versionExists: true, description: 'Placeholder to prevent dependency confusion.', firstPublishedAt: daysAgo(285), latestReleaseAt: daysAgo(285), weeklyDownloads: 14, maintainerCount: 1, deprecated: { flag: false }, repositoryUrl: null };
+    const run = (over = {}) => evaluate({ registry: { ...reg, ...over }, vulns: null, typo: { suspected: false }, halluc: { plausible: false }, license: { category: 'permissive' }, now: NOW });
+    const ev = run();
+    assert.ok(ev.reasons.some((x) => x.code === 'placeholder_package'));
+    assert.equal(ev.verdict, 'caution');
+    // widely used package whose description merely mentions the word is not flagged
+    assert.ok(!run({ weeklyDownloads: 500000 }).reasons.some((x) => x.code === 'placeholder_package'));
+    // an unrelated description is not flagged
+    assert.ok(!run({ description: 'Fast JSON parser' }).reasons.some((x) => x.code === 'placeholder_package'));
+    // ordinary use of the word "placeholder" mid-sentence is not enough
+    assert.ok(!run({ description: 'Input with animated placeholder text' }).reasons.some((x) => x.code === 'placeholder_package'));
+});

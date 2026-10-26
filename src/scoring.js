@@ -3,6 +3,8 @@ import { RANK } from './sources/osv.js';
 
 export const DEFAULTS = { newPackageDays: 30, staleDays: 730, abandonedDays: 1460 };
 
+const PLACEHOLDER_RE = /(^\W*placeholder\b|\bplaceholder (package|for|to)\b|\bdependency[- ]confusion\b|\bname[- ](squat|reserv)\w*|\breserv(es|ed|ing) (this |the )?name\b|\bsecurity holding\b)/i;
+
 const r = (code, severity, points, message) => ({ code, severity, points, message });
 
 /**
@@ -15,7 +17,10 @@ export function evaluate({ registry, vulns, typo, halluc, license, eol, options 
     const ageDays = daysBetween(registry.firstPublishedAt, now);
     const sinceRelease = daysBetween(registry.latestReleaseAt, now);
     const dl = registry.weeklyDownloads ?? null;
-    const established = ageDays !== null && ageDays >= 365 && dl !== null && dl >= 10000;
+    // "Established" (reduced typosquat weight) means old, widely used AND still maintained. A package that
+    // has not shipped a release in years is not vouched for by its download count (mirrors, bots, typos).
+    const abandonedForTypo = sinceRelease !== null && sinceRelease > o.abandonedDays;
+    const established = ageDays !== null && ageDays >= 365 && dl !== null && dl >= 10000 && !abandonedForTypo;
     const typoFactor = established ? 0.25 : 1;
 
     if (!registry.versionExists) reasons.push(r('version_not_found', 'medium', 15, `Version ${registry.requestedVersion} was not found in the registry.`));
@@ -65,6 +70,9 @@ export function evaluate({ registry, vulns, typo, halluc, license, eol, options 
         const risky = (ageDays !== null && ageDays <= o.newPackageDays) || (dl !== null && dl < 500);
         reasons.push(r('install_time_code', risky ? 'medium' : 'info', risky ? 10 : 2, registry.ecosystem === 'npm' ? 'Package defines preinstall/install/postinstall scripts that run at install time.' : 'Only a source distribution is published for this version, so setup code runs at install time.'));
     }
+
+    // self-declared placeholder / name-reservation packages: no real functionality, exist to hold a name
+    if (PLACEHOLDER_RE.test(registry.description || '') && (dl === null || dl < 1000)) reasons.push(r('placeholder_package', 'medium', 10, 'Package description says it is a placeholder or name reservation (e.g. to prevent dependency confusion); it is not expected to contain real functionality.'));
 
     if (!registry.repositoryUrl) reasons.push(r('no_repository_link', 'low', 3, 'No source repository link in registry metadata.'));
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 (actor.json version 0.2)
+Scoring tweak for two misses found in our own 23-package sample (both previously scored just under the `caution` line of 25):
+- **Abandoned near-copies of popular names:** the reduced typosquat weight for "established" packages (>= 1 year old, >= 10,000 weekly downloads) now also requires that the package is still maintained (a release within the `abandonedDays` window, 1,460 days by default). A package one edit away from a top package that has not released for years is no longer vouched for by its download count. Example: `expres` (1 edit from `express`, last release 2013, ~12k weekly downloads) 24 -> 43, `caution`.
+- **New signal `placeholder_package` (+10):** the registry description says the package is a placeholder or name reservation (for example "Placeholder to prevent dependency confusion"), and weekly downloads are under 1,000. Example: `react-codeshift` 21 -> 31, `caution`.
+- No change to the 0.1 default behaviour, verdict thresholds, schemas or the $0.01 `package-checked` price. Regression check: 42 well-known packages stay `ok` and the top 300 npm + top 300 PyPI packages give identical verdicts before and after (599 ok, 1 caution: `mimic-fn`, deprecated). See `scripts/legit-check.mjs`.
+- Known limit: these two rules were added after seeing the two misses, so they are tuned to those patterns; expect other novel look-alikes to still slip under the line.
+
 ## 0.1.0 (actor.json version 0.1)
 - New `lockfile` input: package-lock.json / npm-shrinkwrap.json (v1-v3), yarn.lock (classic and Berry), pnpm-lock.yaml (v5-v9), poetry.lock, uv.lock and Pipfile.lock, auto-detected, checked at exact locked versions.
 - New `baseLockfile` input: check (and charge for) only the package versions added or changed compared with the base branch. An empty diff is a successful, zero-package run.

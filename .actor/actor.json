@@ -3,7 +3,7 @@
     "name": "package-sus-detector",
     "title": "Package Sus Detector: npm & PyPI Slopsquat Check",
     "description": "Check npm and PyPI packages before you install them: hallucinated (slopsquatted) names, typosquats, known vulnerabilities (OSV), deprecated or abandoned packages. Paste a package.json, requirements.txt or lockfile; CI gate and GitHub Actions ready. Built for AI coding agents.",
-    "version": "0.1",
+    "version": "0.2",
     "buildTag": "latest",
     "input": "./input_schema.json",
     "output": "./output_schema.json",
