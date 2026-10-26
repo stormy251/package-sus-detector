@@ -17,6 +17,8 @@ Works with the Apify MCP server, so agents such as Claude Code, Cursor, Codex or
 
 > **Important — risk signals, not accusations.** Results are automated signals computed from public registry and advisory data. A `suspicious` verdict means "look closer before installing", not that a package or its author is malicious. Small, new or unusual-but-legitimate packages can trigger signals, and a clean result is not a guarantee of safety. Always review dependencies before use. Not security advice.
 
+**Try one name free in your browser (no signup):** https://stormy251.github.io/package-sus-demo/ ([source](https://github.com/stormy251/package-sus-demo)). It runs the same checks one package at a time; the paid Actor adds lockfiles, PR diffs, PyPI download signals and the CI gate.
+
 ## How to use
 
 1. Open the Actor and paste packages into **Packages to check**, one per line, e.g. `npm:express`, `npm:lodash@4.17.15`, `pypi:requests`, `pypi:django==2.2.0`.
@@ -96,6 +98,19 @@ A real lockfile has hundreds of entries, and each one is a billed package. To ch
 Only package versions that are new or changed are checked. If nothing changed, the run succeeds with zero packages checked and is free apart from Apify's start event. Use the run's maximum cost setting (`maxTotalChargeUsd` in the API) as a hard cap; the Actor stops cleanly at the cap.
 
 ## Use in CI and GitHub Actions
+
+**Easiest: the GitHub Action.** [`stormy251/package-sus-detector-action`](https://github.com/stormy251/package-sus-detector-action) does the lockfile diff against the PR base, calls this Actor with your Apify token, writes the job summary and fails the job at your `fail-on` level:
+
+```yaml
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: stormy251/package-sus-detector-action@v1
+        with:
+          apify-token: ${{ secrets.APIFY_TOKEN }}
+          fail-on: suspicious
+```
+
+The manual `apify-client` version is below if you want full control.
 
 Set `failOn` and the run summary (key-value store record `SUMMARY`, and the last dataset item) gains a `gate` object and a ready-made `markdown` report:
 
