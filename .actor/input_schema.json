@@ -1,0 +1,183 @@
+{
+    "title": "Package Sus Detector input",
+    "description": "List the packages you are about to install, or paste a package.json, requirements.txt or lockfile (package-lock.json, yarn.lock, pnpm-lock.yaml, poetry.lock, uv.lock, Pipfile.lock). Each package gets one verdict (ok, caution, suspicious, not_found) with a 0-100 risk score and machine-readable reasons. Optional CI gate: set 'fail on' to get a pass/fail decision and a markdown report.",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "packages": {
+            "title": "Packages to check",
+            "type": "array",
+            "description": "Package names, one per entry. Optional version after @ (npm: lodash@4.17.15) or == (PyPI: django==2.2.0). Prefix with npm: or pypi: to mix ecosystems; entries without a prefix use the Default ecosystem below. Without a version the latest release is checked.",
+            "editor": "stringList",
+            "prefill": [
+                "npm:react",
+                "npm:lodash@4.17.15",
+                "pypi:requests",
+                "pypi:django==2.2.0",
+                "npm:express-ai-validator-helper-pro",
+                "pypi:flask-super-auth-helper"
+            ],
+            "example": [
+                "npm:react",
+                "pypi:requests==2.31.0"
+            ]
+        },
+        "ecosystem": {
+            "title": "Default ecosystem",
+            "type": "string",
+            "description": "Ecosystem for entries in 'Packages to check' that have no npm: / pypi: prefix.",
+            "enum": [
+                "npm",
+                "pypi"
+            ],
+            "enumTitles": [
+                "npm (JavaScript / Node.js)",
+                "PyPI (Python)"
+            ],
+            "default": "npm"
+        },
+        "packageJson": {
+            "title": "package.json contents (optional)",
+            "type": "string",
+            "description": "Paste a package.json. dependencies, optionalDependencies, peerDependencies and (optionally) devDependencies are checked. Exact pins are checked at that version; ranges are checked at the latest release and the range is echoed back. Git/file/workspace specifiers are skipped.",
+            "editor": "textarea"
+        },
+        "requirementsTxt": {
+            "title": "requirements.txt contents (optional)",
+            "type": "string",
+            "description": "Paste a requirements.txt. Lines pinned with == are checked at that version; other specifiers are checked at the latest release. Options (-r, -e), URLs, VCS and local paths are skipped.",
+            "editor": "textarea"
+        },
+        "lockfile": {
+            "title": "Lockfile contents (optional)",
+            "type": "string",
+            "description": "Paste a package-lock.json, npm-shrinkwrap.json, yarn.lock, pnpm-lock.yaml, poetry.lock, uv.lock or Pipfile.lock. The format is detected automatically and every entry is checked at its exact locked version (including transitive dependencies). Workspace links and git/file/URL sources are skipped. Tip: a full lockfile can hold hundreds of packages; to check only what a pull request changed, also set 'Base lockfile'.",
+            "editor": "textarea"
+        },
+        "baseLockfile": {
+            "title": "Base lockfile to diff against (optional)",
+            "type": "string",
+            "description": "The same kind of lockfile from your main branch. When set, only packages that are new or changed in 'Lockfile contents' are checked and charged, which keeps CI runs cheap.",
+            "editor": "textarea"
+        },
+        "includeDevDependencies": {
+            "title": "Include devDependencies",
+            "type": "boolean",
+            "description": "When a package.json, package-lock.json or Pipfile.lock is pasted, also check dev dependencies. (Not applied to yarn.lock, pnpm-lock.yaml, poetry.lock or uv.lock, which do not mark dev entries in a way that can be filtered.)",
+            "default": true
+        },
+        "projectLicenseType": {
+            "title": "Your project's licence type (optional)",
+            "type": "string",
+            "description": "If set, each package gets a licence compatibility hint (likely_compatible / review_needed) relative to this type. A convenience signal, not legal advice.",
+            "enum": [
+                "unspecified",
+                "permissive",
+                "proprietary",
+                "weak-copyleft",
+                "strong-copyleft"
+            ],
+            "enumTitles": [
+                "Not specified",
+                "Permissive (MIT, Apache-2.0, BSD)",
+                "Proprietary / closed source",
+                "Weak copyleft (LGPL, MPL)",
+                "Strong copyleft (GPL)"
+            ],
+            "default": "unspecified"
+        },
+        "maxPackages": {
+            "title": "Max packages per run",
+            "type": "integer",
+            "description": "Safety cap on how many packages are checked in one run (hard maximum 5000). Extra packages are skipped and listed in the summary notes.",
+            "default": 500,
+            "minimum": 1,
+            "maximum": 5000
+        },
+        "failOn": {
+            "title": "CI gate: fail on",
+            "type": "string",
+            "description": "Adds a pass/fail decision to the run summary (summary.gate, with exitCode 0 or 1 and a ready-made markdown report) so a CI job can block a pull request. The Actor run itself always finishes normally; your CI step reads gate.exitCode. 'never' (default) only reports. 'caution' fails on caution, suspicious or not_found. 'suspicious' fails on suspicious or not_found. 'not_found' fails only on names that are not registered.",
+            "enum": [
+                "never",
+                "caution",
+                "suspicious",
+                "not_found"
+            ],
+            "enumTitles": [
+                "Never (report only)",
+                "Caution or worse",
+                "Suspicious or not found",
+                "Not found only"
+            ],
+            "default": "never"
+        },
+        "failOnRiskScore": {
+            "title": "CI gate: fail at risk score (optional)",
+            "type": "integer",
+            "description": "Also fail the gate when any package's 0-100 risk score is at or above this number. Leave empty to ignore.",
+            "minimum": 1,
+            "maximum": 100
+        },
+        "newPackageDays": {
+            "title": "'New package' threshold (days)",
+            "type": "integer",
+            "description": "Packages first published within this many days are flagged as new, and feed the slopsquat signal.",
+            "default": 30,
+            "minimum": 1,
+            "maximum": 365
+        },
+        "staleDays": {
+            "title": "'Stale' threshold (days)",
+            "type": "integer",
+            "description": "Packages whose last release is older than this are flagged as stale (twice this value is flagged abandoned).",
+            "default": 730,
+            "minimum": 90,
+            "maximum": 3650
+        },
+        "includeDownloads": {
+            "title": "Look up download counts",
+            "type": "boolean",
+            "description": "Weekly downloads from api.npmjs.org / pypistats.org. Disable for speed; usage-based signals are then skipped.",
+            "default": true
+        },
+        "includeVulnerabilities": {
+            "title": "Look up known vulnerabilities (OSV)",
+            "type": "boolean",
+            "description": "Query api.osv.dev for advisories affecting the checked version, including OSV's malicious-package feed.",
+            "default": true
+        },
+        "includeDepsDev": {
+            "title": "Include deps.dev data",
+            "type": "boolean",
+            "description": "Adds deps.dev version metadata (licences, advisory count, project status, provenance flags).",
+            "default": true
+        },
+        "includeEol": {
+            "title": "Check end-of-life status",
+            "type": "boolean",
+            "description": "For packages that endoflife.date tracks (for example django, react, angular), report whether the release line is end-of-life.",
+            "default": true
+        },
+        "includeScorecard": {
+            "title": "Include OpenSSF Scorecard summary",
+            "type": "boolean",
+            "description": "Adds the OpenSSF Scorecard score, stars and forks of the linked source repository from deps.dev (one extra request per package).",
+            "default": false
+        },
+        "includeSummaryItem": {
+            "title": "Add summary item to dataset",
+            "type": "boolean",
+            "description": "Append a final dataset item (recordType 'summary') with verdict counts and the worst offenders. The summary is always stored in the key-value store under SUMMARY. The summary item is not charged.",
+            "default": true
+        },
+        "concurrency": {
+            "title": "Concurrency",
+            "type": "integer",
+            "description": "Packages checked in parallel (1-16). Per-host rate limiting is applied regardless.",
+            "default": 8,
+            "minimum": 1,
+            "maximum": 16
+        }
+    }
+}

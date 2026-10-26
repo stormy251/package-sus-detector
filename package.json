@@ -1,0 +1,18 @@
+{
+  "name": "package-sus-detector",
+  "version": "0.1.0",
+  "description": "Pre-install package risk check for npm and PyPI: existence, age, maintainers, vulnerabilities (OSV), typosquat and slopsquat signals, lockfile input and a CI gate.",
+  "type": "module",
+  "main": "src/main.js",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test test/",
+    "fetch-popular": "node scripts/fetch-popular.mjs",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "apify": "^3.7.2"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,282 @@
+{
+  "actorSpecification": 1,
+  "title": "Package Sus Detector results",
+  "description": "One item per checked package, plus a final summary item (recordType = summary).",
+  "fields": {
+    "type": "object",
+    "properties": {
+      "recordType": {
+        "type": "string",
+        "title": "Record type",
+        "description": "'package' for a package result, 'summary' for the final run summary.",
+        "enum": [
+          "package",
+          "summary"
+        ],
+        "example": "package"
+      },
+      "ecosystem": {
+        "type": "string",
+        "title": "Ecosystem",
+        "description": "npm or pypi.",
+        "enum": [
+          "npm",
+          "pypi"
+        ],
+        "example": "npm"
+      },
+      "name": {
+        "type": "string",
+        "title": "Package name",
+        "description": "Package name as checked (PyPI names normalised per PEP 503).",
+        "example": "lodash"
+      },
+      "requestedVersion": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Requested version",
+        "description": "Exact version requested, or null when the latest release was checked.",
+        "example": "4.17.15"
+      },
+      "requestedRange": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Requested range",
+        "description": "Original version range (e.g. ^4.17.0) when it could not be pinned to one version; the latest release was checked.",
+        "example": "^4.17.0"
+      },
+      "resolvedVersion": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Checked version",
+        "description": "The version that vulnerability and licence data refer to.",
+        "example": "4.17.15"
+      },
+      "verdict": {
+        "type": "string",
+        "title": "Verdict",
+        "description": "ok = no notable signals; caution = some risk signals worth reviewing (or known high/critical vulnerabilities, deprecation); suspicious = strong combination of risk signals or listed in the OSV malicious-packages feed; not_found = name not registered (possible hallucinated name); error = registry lookup failed (not charged).",
+        "enum": [
+          "ok",
+          "caution",
+          "suspicious",
+          "not_found",
+          "error"
+        ],
+        "example": "caution"
+      },
+      "riskScore": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "title": "Risk score",
+        "description": "0-100 heuristic score from summed risk signals. Higher means more signals; it is not a probability of malice.",
+        "example": 25
+      },
+      "summary": {
+        "type": "string",
+        "title": "Summary",
+        "description": "One-line human-readable explanation of the top signals."
+      },
+      "reasons": {
+        "type": "array",
+        "title": "Reasons",
+        "description": "Machine-readable risk signals: [{code, severity (info|low|medium|high), points, message}] sorted by points.",
+        "items": {
+          "type": "object"
+        }
+      },
+      "registry": {
+        "type": "object",
+        "title": "Registry facts",
+        "description": "exists, firstPublishedAt, ageDays, latestVersion, latestReleaseAt, daysSinceLastRelease, stale, versionCount, maintainerCount, weeklyDownloads, deprecated, deprecationMessage, installTimeCode, repositoryUrl."
+      },
+      "license": {
+        "type": "object",
+        "title": "Licence",
+        "description": "spdx, category (permissive / weak-copyleft / strong-copyleft / network-copyleft / proprietary / unknown), note and compatibility hint relative to your project licence type."
+      },
+      "vulnerabilities": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "title": "Vulnerabilities (OSV)",
+        "description": "count, maxSeverity (none/low/medium/high/critical/unknown), maxCvss, ids, top, fixedVersions, highestFixedVersion, knownMalicious, maliciousIds for the checked version."
+      },
+      "depsDev": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "title": "deps.dev",
+        "description": "Licences, advisory count, project status, provenance flag, source project and optional OpenSSF Scorecard."
+      },
+      "endOfLife": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "title": "End of life",
+        "description": "endoflife.date release-line status when the package is tracked there: product, cycle, isEol, eolFrom."
+      },
+      "typosquat": {
+        "type": "object",
+        "title": "Typosquat check",
+        "description": "suspected, isPopular, matches [{popular, rank, type (edit_distance|separator_variant|combo), distance}] against the bundled top-5000 popular names for the ecosystem."
+      },
+      "slopsquat": {
+        "type": "object",
+        "title": "Slopsquat signal",
+        "description": "signal (none|low|medium|high), plausibleHallucinatedName, basis. Based on name not registered, or very new + near-zero usage + AI-plausible name."
+      },
+      "checkedAt": {
+        "type": "string",
+        "title": "Checked at",
+        "description": "ISO timestamp of the check."
+      },
+      "latencyMs": {
+        "type": "integer",
+        "title": "Latency (ms)",
+        "description": "Time spent checking this package."
+      },
+      "dataQuality": {
+        "type": "string",
+        "title": "Data quality",
+        "description": "complete, or partial when some upstream sources failed (see errors).",
+        "enum": [
+          "complete",
+          "partial"
+        ]
+      },
+      "errors": {
+        "type": "array",
+        "title": "Errors",
+        "description": "Non-fatal upstream errors for this package.",
+        "items": {
+          "type": "string"
+        }
+      },
+      "totalChecked": {
+        "type": "integer",
+        "title": "Total checked (summary)",
+        "description": "Summary item only: number of packages checked."
+      },
+      "verdictCounts": {
+        "type": "object",
+        "title": "Verdict counts (summary)",
+        "description": "Summary item only: counts per verdict."
+      },
+      "overall": {
+        "type": "string",
+        "title": "Overall (summary)",
+        "description": "Summary item only: worst verdict class in the run (ok, caution, suspicious, not_found, incomplete)."
+      },
+      "worstOffenders": {
+        "type": "array",
+        "title": "Worst offenders (summary)",
+        "description": "Summary item only: up to 5 highest-scoring packages.",
+        "items": {
+          "type": "object"
+        }
+      },
+      "gate": {
+        "type": "object",
+        "title": "CI gate (summary)",
+        "description": "Summary item only: failOn, passed, exitCode (0 or 1), failingCount, failing packages, incomplete (lookup errors) and complete (false when some packages were not checked)."
+      },
+      "markdown": {
+        "type": "string",
+        "title": "Markdown report (summary)",
+        "description": "Summary item only: report ready to paste into a pull-request comment or GitHub step summary."
+      }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Verdicts",
+      "description": "One row per package, worst signals visible at a glance.",
+      "transformation": {
+        "fields": [
+          "ecosystem",
+          "name",
+          "resolvedVersion",
+          "verdict",
+          "riskScore",
+          "summary",
+          "vulnerabilities.count",
+          "vulnerabilities.maxSeverity",
+          "registry.ageDays",
+          "registry.weeklyDownloads",
+          "registry.deprecated",
+          "slopsquat.signal"
+        ],
+        "flatten": [
+          "vulnerabilities",
+          "registry",
+          "slopsquat"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "ecosystem": {
+            "label": "Ecosystem",
+            "format": "text"
+          },
+          "name": {
+            "label": "Package",
+            "format": "text"
+          },
+          "resolvedVersion": {
+            "label": "Version",
+            "format": "text"
+          },
+          "verdict": {
+            "label": "Verdict",
+            "format": "text"
+          },
+          "riskScore": {
+            "label": "Risk score",
+            "format": "number"
+          },
+          "summary": {
+            "label": "Why",
+            "format": "text"
+          },
+          "vulnerabilities.count": {
+            "label": "Vulns",
+            "format": "number"
+          },
+          "vulnerabilities.maxSeverity": {
+            "label": "Max severity",
+            "format": "text"
+          },
+          "registry.ageDays": {
+            "label": "Age (days)",
+            "format": "number"
+          },
+          "registry.weeklyDownloads": {
+            "label": "Weekly downloads",
+            "format": "number"
+          },
+          "registry.deprecated": {
+            "label": "Deprecated",
+            "format": "boolean"
+          },
+          "slopsquat.signal": {
+            "label": "Slopsquat signal",
+            "format": "text"
+          }
+        }
+      }
+    }
+  }
+}

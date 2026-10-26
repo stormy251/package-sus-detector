@@ -1,0 +1,20 @@
+{
+    "actorOutputSchemaVersion": 1,
+    "title": "Package Sus Detector output",
+    "description": "One dataset item per checked package (verdict, riskScore, reasons) plus a final summary item. The same summary is stored in the key-value store under the key SUMMARY.",
+    "type": "object",
+    "properties": {
+        "results": {
+            "type": "string",
+            "title": "Package verdicts",
+            "description": "Dataset items: one per package with verdict (ok / caution / suspicious / not_found / error), riskScore 0-100 and machine-readable reasons; the last item is the run summary.",
+            "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+        },
+        "summary": {
+            "type": "string",
+            "title": "Run summary",
+            "description": "JSON summary: verdict counts, overall status, worst offenders, known-vulnerability totals.",
+            "template": "{{links.apiDefaultKeyValueStoreUrl}}/records/SUMMARY"
+        }
+    }
+}

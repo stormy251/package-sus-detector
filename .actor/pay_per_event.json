@@ -1,0 +1,12 @@
+{
+    "package-checked": {
+        "eventTitle": "Package checked",
+        "eventDescription": "One npm or PyPI package (optionally a specific version) checked: registry existence, age, maintainers, downloads, deprecation, licence, OSV vulnerabilities, typosquat and slopsquat signals. Charged once per package result written to the dataset (not charged when the registry lookup itself fails).",
+        "eventPriceUsd": 0.01
+    },
+    "apify-actor-start": {
+        "eventTitle": "Actor start (synthetic)",
+        "eventDescription": "Synthetic start event charged automatically by Apify. Keep the default price; do not charge it in code.",
+        "eventPriceUsd": 0.00005
+    }
+}
